@@ -205,10 +205,9 @@ What ``remote_identity`` controls per cloud:
   Accepts a plain string, or a list of ``{cluster-name-glob: role}`` mappings.
 * **Kubernetes** — the ``serviceAccountName`` set on the pod. Accepts a plain
   string (applied to every context) or a ``{context: service-account}`` mapping.
-* **GCP** — credential *mode* only: one of ``LOCAL_CREDENTIALS``,
-  ``SERVICE_ACCOUNT``, or ``NO_UPLOAD``. Unlike AWS and Kubernetes, GCP cannot
-  pin a specific service account email per workspace; the VM uses the default
-  SkyPilot service account.
+* **GCP** — the credential mode (``LOCAL_CREDENTIALS``, ``SERVICE_ACCOUNT``, or
+  ``NO_UPLOAD``), or a service account email to attach an existing service
+  account to launched VMs.
 
 .. _workspaces-remote-identity-precedence:
 

@@ -1,3 +1,79 @@
+## Fork Notes
+
+This fork lets GCP users attach an existing service account to SkyPilot VMs:
+
+```yaml
+gcp:
+  remote_identity: my-existing-sa@my-project.iam.gserviceaccount.com
+```
+
+With a service account email, SkyPilot skips creating or binding its default GCP
+service account. The existing `LOCAL_CREDENTIALS`, `SERVICE_ACCOUNT`, and
+`NO_UPLOAD` modes keep the upstream behavior.
+
+### Use This Fork From A `uv` Project
+
+In your project's `pyproject.toml`, pin `skypilot` to this fork:
+
+```toml
+[project]
+dependencies = [
+  "skypilot[gcp]",
+]
+
+[tool.uv.sources]
+skypilot = { git = "https://github.com/<your-org>/skypilot.git", rev = "<commit-sha>" }
+```
+
+Then run:
+
+```bash
+uv sync
+uv run sky --version
+```
+
+### API Server Dashboard
+
+`uv sync` does not run npm. If you need the API server dashboard from this fork,
+build it from a checkout at the same commit:
+
+```bash
+git clone https://github.com/<your-org>/skypilot.git
+cd skypilot
+git checkout <commit-sha>
+
+npm --prefix sky/dashboard install
+npm --prefix sky/dashboard run build
+
+cd <your-uv-project>
+uv run sky api stop
+uv run sky api start
+uv run sky api status
+```
+
+### Configure The GCP Service Account
+
+Edit `~/.sky/config.yaml`:
+
+```bash
+mkdir -p ~/.sky
+${EDITOR:-vi} ~/.sky/config.yaml
+```
+
+Add:
+
+```yaml
+gcp:
+  remote_identity: my-existing-sa@my-project.iam.gserviceaccount.com
+```
+
+Then restart the API server if you are using one:
+
+```bash
+uv run sky api stop
+uv run sky api start
+```
+
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/skypilot-org/skypilot/master/docs/source/images/skypilot-wide-dark-1k.png">
