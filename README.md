@@ -38,7 +38,7 @@ uv run sky --version
 build it from a checkout at the same commit:
 
 ```bash
-git clone https://github.com/<your-org>/skypilot.git
+git clone https://github.com/TamasTolerianQC/skypilot.git
 cd skypilot
 git checkout <commit-sha>
 
@@ -67,7 +67,7 @@ gcp:
   remote_identity: my-existing-sa@my-project.iam.gserviceaccount.com
 ```
 
-Then restart the API server if you are using one:
+(Debugging tip) If you already ran a command that launched the local API server in the background, you might need to stop and re-start the server for changes to take effect.
 
 ```bash
 uv run sky api stop
