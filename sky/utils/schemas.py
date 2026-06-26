@@ -1428,6 +1428,12 @@ _REMOTE_IDENTITY_SCHEMA = {
     }
 }
 
+_REMOTE_IDENTITY_SCHEMA_GCP = {
+    'remote_identity': {
+        'type': 'string',
+    }
+}
+
 _REMOTE_IDENTITY_SCHEMA_KUBERNETES = {
     'remote_identity': {
         'anyOf': [{
@@ -2404,6 +2410,7 @@ def get_config_schema():
                             'type': 'boolean'
                         },
                         **_CAPABILITIES_SCHEMA,
+                        **_REMOTE_IDENTITY_SCHEMA_GCP,
                     },
                     'additionalProperties': False,
                 },
@@ -2634,6 +2641,8 @@ def get_config_schema():
         if cloud in ('aws', 'azure'):
             config['properties'].update(
                 {'remote_identity': _PROPERTY_NAME_OR_CLUSTER_NAME_TO_PROPERTY})
+        elif cloud == 'gcp':
+            config['properties'].update(_REMOTE_IDENTITY_SCHEMA_GCP)
         elif cloud == 'kubernetes':
             config['properties'].update(_REMOTE_IDENTITY_SCHEMA_KUBERNETES)
         else:

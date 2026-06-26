@@ -14,6 +14,7 @@ from sky.provision import constants as provision_constants
 from sky.provision.gcp import constants
 from sky.provision.gcp import instance_utils
 from sky.utils import resources_utils
+from sky.utils import schemas
 
 logger = logging.getLogger(__name__)
 
@@ -330,9 +331,27 @@ def _configure_iam_role(config: common.ProvisionConfig, crm, iam) -> dict:
     storage/compute services. Specifically, the head node needs to have
     an IAM role that allows it to create further gce instances and store items
     in google cloud storage.
-
-    TODO: Allow the name/id of the service account to be configured
     """
+    remote_identity = config.provider_config.get('remote_identity')
+    remote_identity_options = {
+        option.value for option in schemas.RemoteIdentityOptions
+    }
+    if (remote_identity is not None and
+            remote_identity not in remote_identity_options):
+        logger.info(
+            f'_configure_iam_role: using configured service account '
+            f'{remote_identity}')
+        account_dict = {
+            'email': remote_identity,
+            'scopes': ['https://www.googleapis.com/auth/cloud-platform'],
+        }
+        if (instance_utils.get_node_type(
+                config.node_config) == instance_utils.GCPNodeType.TPU):
+            account_dict['scope'] = account_dict['scopes']
+            account_dict.pop('scopes')
+            return {'serviceAccount': account_dict}
+        return {'serviceAccounts': [account_dict]}
+
     project_id = config.provider_config['project_id']
     email = constants.SKYPILOT_SERVICE_ACCOUNT_EMAIL_TEMPLATE.format(
         account_id=constants.SKYPILOT_SERVICE_ACCOUNT_ID,

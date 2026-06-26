@@ -865,6 +865,13 @@ class TestGCPSchema(unittest.TestCase):
         }
         jsonschema.validate(instance=config, schema=self.gcp_schema)
 
+    def test_gcp_remote_identity_custom_service_account(self):
+        """Test that GCP accepts a custom service account email."""
+        config = {
+            'remote_identity': 'custom-sa@test-project.iam.gserviceaccount.com'
+        }
+        jsonschema.validate(instance=config, schema=self.gcp_schema)
+
     def test_gcp_subnet_names_rejects_integer(self):
         """Test that GCP rejects non-string subnet_names."""
         config = {'subnet_names': 123}

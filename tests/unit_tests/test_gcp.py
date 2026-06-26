@@ -199,6 +199,30 @@ def _make_provision_config(provider_config):
     )
 
 
+def test_gcp_configure_iam_role_uses_custom_remote_identity():
+    service_account = 'custom-sa@test-project.iam.gserviceaccount.com'
+    provision_config = _make_provision_config({
+        'project_id': 'test-project',
+        'remote_identity': service_account,
+    })
+
+    with patch.object(gcp_config, '_get_service_account') as get_sa, \
+         patch.object(gcp_config, '_create_service_account') as create_sa, \
+         patch.object(gcp_config, '_add_iam_policy_binding') as add_binding:
+        iam_role = gcp_config._configure_iam_role(provision_config,
+                                                  MagicMock(), MagicMock())
+
+    assert iam_role == {
+        'serviceAccounts': [{
+            'email': service_account,
+            'scopes': ['https://www.googleapis.com/auth/cloud-platform'],
+        }]
+    }
+    get_sa.assert_not_called()
+    create_sa.assert_not_called()
+    add_binding.assert_not_called()
+
+
 def test_gcp_get_usable_vpc_and_subnet_uses_specified_subnet(monkeypatch):
     provider_config = {
         'project_id': 'test-project',

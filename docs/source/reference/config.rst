@@ -1326,7 +1326,15 @@ Example:
 
 Identity to use for GCP instances (optional).
 
-Please refer to the aws.remote_identity section above for more details.
+Supported values:
+
+* ``LOCAL_CREDENTIALS``: upload local GCP credentials to the cluster.
+* ``SERVICE_ACCOUNT``: use the default SkyPilot-managed service account.
+* ``NO_UPLOAD``: do not upload local GCP credentials.
+* A service account email, e.g.
+  ``my-sa@my-project.iam.gserviceaccount.com``: attach that existing service
+  account to the VM. SkyPilot will not create a service account or add IAM
+  policy bindings for it.
 
 Default: ``LOCAL_CREDENTIALS``.
 
