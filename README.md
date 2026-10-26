@@ -59,11 +59,15 @@ sky api start
 
 ## Update this fork
 
-1. Reset `master` to upstream `master`.
-2. Cherry-pick the commits of #11032 onto it.
+`master` mirrors upstream, and the patch goes in through a pull request.
+
+1. Reset `master` to upstream `master`. `master` blocks force pushes, so allow
+   them in its branch protection for this push and block them again afterwards.
+2. On a new branch from `master`, cherry-pick the commits of #11032.
 3. Rebuild the dashboard with `npm --prefix sky/dashboard ci` and
    `npm --prefix sky/dashboard run build`, then commit it with
    `git add -f sky/dashboard/out`.
+4. Open a pull request from that branch into `master`.
 
 ---
 
