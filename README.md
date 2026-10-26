@@ -8,28 +8,27 @@ account. SkyPilot then runs the VMs as that account and does not create the
 `skypilot-v1` service account or grant it roles, so you can launch on GCP
 without `iam.serviceAccounts.create`.
 
-Once #11032 is released, switch back to `skypilot` from PyPI.
+Once #11032 is released, switch back to the released `skypilot` package.
 
 ## Install
 
-Pin `skypilot` to a commit SHA from this fork's `master`. Use a SHA rather than
-a branch, because `master` is reset to upstream whenever the fork is updated.
-
-With uv, in your `pyproject.toml`:
-
-```toml
-[project]
-dependencies = ["skypilot[gcp]"]
-
-[tool.uv.sources]
-skypilot = { git = "https://github.com/TamasTolerianQC/skypilot.git", rev = "<commit-sha>" }
-```
-
-With pip:
+Add `skypilot` from this fork to your pixi workspace as a PyPI dependency.
+Pin a commit SHA from this fork's `master` rather than a branch, because
+`master` is reset to upstream whenever the fork is updated.
 
 ```bash
-pip install "skypilot[gcp] @ git+https://github.com/TamasTolerianQC/skypilot.git@<commit-sha>"
+pixi add --pypi --git https://github.com/TamasTolerianQC/skypilot.git --rev <commit-sha> "skypilot[gcp]"
 ```
+
+This adds the following to your `pixi.toml`:
+
+```toml
+[pypi-dependencies]
+skypilot = { git = "https://github.com/TamasTolerianQC/skypilot.git", rev = "<commit-sha>", extras = ["gcp"] }
+```
+
+Do not also list `skypilot` under `[dependencies]`. That is the conda-forge
+release, and pixi cannot solve both.
 
 Installing from git does not build the API server dashboard, so this fork
 commits the built dashboard in `sky/dashboard/out`. You do not need npm.
@@ -53,8 +52,8 @@ If a local API server is already running, restart it so it reads the new
 config:
 
 ```bash
-sky api stop
-sky api start
+pixi run sky api stop
+pixi run sky api start
 ```
 
 ## Update this fork
@@ -64,9 +63,14 @@ sky api start
 1. Reset `master` to upstream `master`. `master` blocks force pushes, so allow
    them in its branch protection for this push and block them again afterwards.
 2. On a new branch from `master`, cherry-pick the commits of #11032.
-3. Rebuild the dashboard with `npm --prefix sky/dashboard ci` and
-   `npm --prefix sky/dashboard run build`, then commit it with
-   `git add -f sky/dashboard/out`.
+3. Rebuild the dashboard and commit it. pixi supplies Node.js:
+
+   ```bash
+   pixi exec --spec nodejs=22 -- npm --prefix sky/dashboard ci
+   pixi exec --spec nodejs=22 -- npm --prefix sky/dashboard run build
+   git add -f sky/dashboard/out
+   ```
+
 4. Open a pull request from that branch into `master`.
 
 ---
