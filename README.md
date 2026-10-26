@@ -1,3 +1,80 @@
+# About this fork
+
+This is a temporary fork of SkyPilot. It is upstream `master` plus one change
+from the open upstream PR
+[skypilot-org/skypilot#11032](https://github.com/skypilot-org/skypilot/pull/11032).
+The change lets `gcp.remote_identity` take the email of an existing service
+account. SkyPilot then runs the VMs as that account and does not create the
+`skypilot-v1` service account or grant it roles, so you can launch on GCP
+without `iam.serviceAccounts.create`.
+
+Once #11032 is released, switch back to the released `skypilot` package.
+
+## Install
+
+Add `skypilot` from this fork to your pixi workspace as a PyPI dependency.
+Pin a commit SHA from this fork's `master` rather than a branch, because
+`master` is reset to upstream whenever the fork is updated.
+
+```bash
+pixi add --pypi --git https://github.com/TamasTolerianQC/skypilot.git --rev <commit-sha> "skypilot[gcp]"
+```
+
+This adds the following to your `pixi.toml`:
+
+```toml
+[pypi-dependencies]
+skypilot = { git = "https://github.com/TamasTolerianQC/skypilot.git", rev = "<commit-sha>", extras = ["gcp"] }
+```
+
+Do not also list `skypilot` under `[dependencies]`. That is the conda-forge
+release, and pixi cannot solve both.
+
+Installing from git does not build the API server dashboard, so this fork
+commits the built dashboard in `sky/dashboard/out`. You do not need npm.
+
+## Configure
+
+Set the service account in `~/.sky/config.yaml`:
+
+```yaml
+gcp:
+  remote_identity: my-sa@my-project.iam.gserviceaccount.com
+```
+
+You can also pick an account by cluster name with a list of
+`{cluster-name-glob: service-account}` mappings, as with
+[`aws.remote_identity`](https://docs.skypilot.co/en/latest/reference/config.html#aws-remote-identity).
+The mode names `LOCAL_CREDENTIALS`, `SERVICE_ACCOUNT` and `NO_UPLOAD` behave as
+upstream.
+
+If a local API server is already running, restart it so it reads the new
+config:
+
+```bash
+pixi run sky api stop
+pixi run sky api start
+```
+
+## Update this fork
+
+`master` mirrors upstream, and the patch goes in through a pull request.
+
+1. Reset `master` to upstream `master`. `master` blocks force pushes, so allow
+   them in its branch protection for this push and block them again afterwards.
+2. On a new branch from `master`, cherry-pick the commits of #11032.
+3. Rebuild the dashboard and commit it. pixi supplies Node.js:
+
+   ```bash
+   pixi exec --spec nodejs=22 -- npm --prefix sky/dashboard ci
+   pixi exec --spec nodejs=22 -- npm --prefix sky/dashboard run build
+   git add -f sky/dashboard/out
+   ```
+
+4. Open a pull request from that branch into `master`.
+
+---
+
 <p align="center">
   <a href="https://skypilot.ai/">
     <picture>
