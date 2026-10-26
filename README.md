@@ -1,3 +1,72 @@
+# About this fork
+
+This is a temporary fork of SkyPilot. It is upstream `master` plus one change
+from the open upstream PR
+[skypilot-org/skypilot#11032](https://github.com/skypilot-org/skypilot/pull/11032).
+The change lets `gcp.remote_identity` take the email of an existing service
+account. SkyPilot then runs the VMs as that account and does not create the
+`skypilot-v1` service account or grant it roles, so you can launch on GCP
+without `iam.serviceAccounts.create`.
+
+Once #11032 is released, switch back to `skypilot` from PyPI.
+
+## Install
+
+Pin `skypilot` to a commit SHA from this fork's `master`. Use a SHA rather than
+a branch, because `master` is reset to upstream whenever the fork is updated.
+
+With uv, in your `pyproject.toml`:
+
+```toml
+[project]
+dependencies = ["skypilot[gcp]"]
+
+[tool.uv.sources]
+skypilot = { git = "https://github.com/TamasTolerianQC/skypilot.git", rev = "<commit-sha>" }
+```
+
+With pip:
+
+```bash
+pip install "skypilot[gcp] @ git+https://github.com/TamasTolerianQC/skypilot.git@<commit-sha>"
+```
+
+Installing from git does not build the API server dashboard, so this fork
+commits the built dashboard in `sky/dashboard/out`. You do not need npm.
+
+## Configure
+
+Set the service account in `~/.sky/config.yaml`:
+
+```yaml
+gcp:
+  remote_identity: my-sa@my-project.iam.gserviceaccount.com
+```
+
+You can also pick an account by cluster name with a list of
+`{cluster-name-glob: service-account}` mappings, as with
+[`aws.remote_identity`](https://docs.skypilot.co/en/latest/reference/config.html#aws-remote-identity).
+The mode names `LOCAL_CREDENTIALS`, `SERVICE_ACCOUNT` and `NO_UPLOAD` behave as
+upstream.
+
+If a local API server is already running, restart it so it reads the new
+config:
+
+```bash
+sky api stop
+sky api start
+```
+
+## Update this fork
+
+1. Reset `master` to upstream `master`.
+2. Cherry-pick the commits of #11032 onto it.
+3. Rebuild the dashboard with `npm --prefix sky/dashboard ci` and
+   `npm --prefix sky/dashboard run build`, then commit it with
+   `git add -f sky/dashboard/out`.
+
+---
+
 <p align="center">
   <a href="https://skypilot.ai/">
     <picture>
